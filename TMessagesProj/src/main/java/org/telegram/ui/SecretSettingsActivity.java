@@ -111,14 +111,14 @@ public class SecretSettingsActivity extends BaseFragment {
             AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
             builder.setTitle("Swipe Threshold");
             final NumberPicker numberPicker = new NumberPicker(getParentActivity());
-            numberPicker.setMinValue(5);
-            numberPicker.setMaxValue(30);
+            numberPicker.setMinValue(0);
+            numberPicker.setMaxValue(100);
             numberPicker.setValue(threshold);
             builder.setView(numberPicker);
             builder.setNegativeButton(LocaleController.getString("Done", R.string.Done), new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialog, int which) {
-                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE); 
+                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt("swipe_threshold", numberPicker.getValue());
                 editor.commit();
@@ -159,7 +159,7 @@ private class ListAdapter extends BaseFragmentAdapter {
 
   @Override
   public boolean isEnabled(int i) {
-    return !( i == swipeThresholdRow);
+    return  i == swipeThresholdRow;
   }
 
   @Override
