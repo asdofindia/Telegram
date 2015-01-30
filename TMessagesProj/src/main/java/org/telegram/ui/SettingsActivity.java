@@ -585,6 +585,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                                 });
                         builder.setNegativeButton(LocaleController.getString("OK", R.string.OK), null);
                         showAlertDialog(builder);
+                    } else if ( i == versionRow ){
+                        presentFragment(new SecretSettingsActivity());
                     } else if (i == usernameRow) {
                         presentFragment(new ChangeUsernameActivity());
                     } else if (i == numberRow) {

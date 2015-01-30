@@ -11,6 +11,7 @@ package org.telegram.ui.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
@@ -29,6 +30,7 @@ import android.widget.LinearLayout;
 
 import org.telegram.android.AndroidUtilities;
 import org.telegram.android.NotificationCenter;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
 import org.telegram.ui.AnimationCompat.AnimatorListenerAdapterProxy;
 import org.telegram.ui.AnimationCompat.AnimatorSetProxy;
@@ -370,7 +372,9 @@ public class ActionBarLayout extends FrameLayout {
                     int dx = Math.max(0, (int) (ev.getX() - startedTrackingX));
                     int dy = Math.abs((int) ev.getY() - startedTrackingY);
                     velocityTracker.addMovement(ev);
-                    if (maybeStartTracking && !startedTracking && dx >= AndroidUtilities.dp(10) && Math.abs(dx) / 3 > dy) {
+                    SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+                    int threshold = preferences.getInt("swipe_threshold", 10);
+                    if (maybeStartTracking && !startedTracking && dx >= AndroidUtilities.dp(threshold) && Math.abs(dx) / 3 > dy) {
                         prepareForMoving(ev);
                     } else if (startedTracking) {
                         if (!beginTrackingSent) {
