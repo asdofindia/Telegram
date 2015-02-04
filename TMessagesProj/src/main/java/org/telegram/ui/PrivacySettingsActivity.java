@@ -76,7 +76,7 @@ public class PrivacySettingsActivity extends BaseFragment implements Notificatio
         deleteAccountSectionRow = rowCount++;
         deleteAccountRow = rowCount++;
         deleteAccountDetailRow = rowCount++;
-        passwordRow = -1;
+        passwordRow = rowCount++;
 
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.privacyRulesUpdated);
 

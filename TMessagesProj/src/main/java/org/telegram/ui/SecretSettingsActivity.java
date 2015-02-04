@@ -9,8 +9,11 @@
 package org.telegram.ui;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,6 +39,8 @@ import org.telegram.messenger.TLObject;
 import org.telegram.messenger.TLRPC;
 import org.telegram.messenger.ConnectionsManager;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.Utilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.android.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.RPCRequest;
@@ -56,11 +61,17 @@ public class SecretSettingsActivity extends BaseFragment {
   private boolean reseting = false;
 
   private int swipeThresholdRow;
+  private int headerColorRow;
+  private int drawerColorRow;
+  private int restartRow;
   private int rowCount = 0;
 
   @Override
   public boolean onFragmentCreate() {
     swipeThresholdRow = rowCount++;
+    headerColorRow = rowCount++;
+    drawerColorRow = rowCount++;
+    restartRow = rowCount++;
 
     return super.onFragmentCreate();
   }
@@ -128,6 +139,77 @@ public class SecretSettingsActivity extends BaseFragment {
               }
             });
             showAlertDialog(builder);
+          } else if ( i == restartRow){
+            if (getParentActivity() == null) {
+              return;
+            }
+            Utilities.stageQueue.postRunnable(new Runnable() {
+              @Override
+              public void run() {
+                  // http://stackoverflow.com/a/17166729
+                Intent mStartActivity = new Intent(ApplicationLoader.applicationContext, StartActivity.class);
+                int mPendingIntentId = 17166729;
+                PendingIntent mPendingIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                AlarmManager mgr = (AlarmManager)ApplicationLoader.applicationContext.getSystemService(Context.ALARM_SERVICE);
+                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                System.exit(0);
+                // System.exit(0);
+                // restart(ApplicationLoader.applicationContext,2);
+              }
+            });
+          } else if ( i == headerColorRow || i == drawerColorRow ) {
+            if (getParentActivity() == null) {
+              return;
+            }
+
+            LayoutInflater li = (LayoutInflater)getParentActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = li.inflate(R.layout.settings_color_dialog_layout, null, false);
+            final ColorPickerView colorPickerView = (ColorPickerView)view.findViewById(R.id.color_picker);
+
+            SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+            if (i == headerColorRow) {
+              colorPickerView.setOldCenterColor(preferences.getInt("headerColor", 0xff54759e));
+            } else if (i == drawerColorRow){
+              colorPickerView.setOldCenterColor(preferences.getInt("drawerColor", 0xff4c84b5));
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+            if (i == headerColorRow) {
+              builder.setTitle("Header Color");
+            } else if (i == drawerColorRow) {
+              builder.setTitle("Drawer Color");
+            }
+            builder.setView(view);
+            builder.setPositiveButton(LocaleController.getString("Set", R.string.Set), new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialogInterface, int which) {
+                final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                if (i == headerColorRow) {
+                  editor.putInt("headerColor", Integer.parseInt(Integer.toString(colorPickerView.getColor())) );
+                } else if (i == drawerColorRow){
+                  editor.putInt("drawerColor", colorPickerView.getColor());
+                }
+                editor.commit();
+                listView.invalidateViews();
+              }
+            });
+            builder.setNeutralButton("Reset", new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                if (i == headerColorRow) {
+                  editor.putInt("headerColor", 0xff54759e);
+                } else if (i == drawerColorRow) {
+                  editor.putInt("drawerColor", 0xff4c84b5);
+                }
+                editor.commit();
+                listView.invalidateViews();
+              }
+            });
+            showAlertDialog(builder);
+
           }
           if (view instanceof TextCheckCell) {
             ((TextCheckCell) view).setChecked(!enabled);
@@ -142,9 +224,19 @@ public class SecretSettingsActivity extends BaseFragment {
     }
     return fragmentView;
   }
-
-
-
+/*
+public static void restart(Context context, int delay) {
+  // http://stackoverflow.com/a/22377728
+  if (delay == 0) {
+    delay = 1;
+  }
+  Intent restartIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName() );
+  PendingIntent intent = PendingIntent.getActivity( context, 0, restartIntent, Intent.FLAG_ACTIVITY_CLEAR_TOP);
+  AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+  manager.set(AlarmManager.RTC, System.currentTimeMillis() + delay, intent);
+  System.exit(0);
+}
+*/
 private class ListAdapter extends BaseFragmentAdapter {
   private Context mContext;
 
@@ -154,12 +246,12 @@ private class ListAdapter extends BaseFragmentAdapter {
 
   @Override
   public boolean areAllItemsEnabled() {
-    return false;
+    return true;
   }
 
   @Override
   public boolean isEnabled(int i) {
-    return  i == swipeThresholdRow;
+    return  i == swipeThresholdRow || i == headerColorRow || i == drawerColorRow || i == restartRow;
   }
 
   @Override
@@ -191,7 +283,26 @@ private class ListAdapter extends BaseFragmentAdapter {
       }
     } if (type == 1) {  //check mark
     } else if (type == 2) {
-    } else if (type == 3) {
+      if (view == null) {
+        view = new TextDetailSettingsCell(mContext);
+      }
+      TextDetailSettingsCell textCell = (TextDetailSettingsCell) view;
+      if ( i == restartRow) {
+         textCell.setTextAndValue("Restart App", "Some settings might not take effect till you restart", false);
+      }
+    } else if (type == 3) { // color
+      if (view == null) {
+        view = new TextColorCell(mContext);
+      }
+
+      TextColorCell textCell = (TextColorCell) view;
+
+      SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+      if (i == headerColorRow) {
+        textCell.setTextAndColor("Header Color", preferences.getInt("headerColor", 0xff54759e), true);
+      } else if (i == drawerColorRow) {
+        textCell.setTextAndColor("Drawer Color", preferences.getInt("drawerColor", 0xff4c84b5), true);
+      }
     } else if (type == 4) {
       if (view == null) {
         view = new ShadowSectionCell(mContext);
@@ -214,6 +325,10 @@ private class ListAdapter extends BaseFragmentAdapter {
   public int getItemViewType(int i) {
     if (i == swipeThresholdRow) {
       return 5;
+    } else if ( i == headerColorRow || i == drawerColorRow){
+      return 3;
+    } else if ( i == restartRow ) {
+      return 2;
     }
     else {
       return 0;

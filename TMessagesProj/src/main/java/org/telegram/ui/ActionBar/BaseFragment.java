@@ -12,11 +12,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ConnectionsManager;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
@@ -76,7 +78,9 @@ public class BaseFragment {
             if (parentLayout != null) {
                 actionBar = new ActionBar(parentLayout.getContext());
                 actionBar.parentFragment = this;
-                actionBar.setBackgroundResource(R.color.header);
+                SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+                int headerColor = preferences.getInt("headerColor", 0xff54759e);
+                actionBar.setBackgroundColor(headerColor);
                 actionBar.setItemsBackground(R.drawable.bar_selector);
             }
         }

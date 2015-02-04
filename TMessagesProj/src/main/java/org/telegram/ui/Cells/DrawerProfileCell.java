@@ -8,7 +8,9 @@
 
 package org.telegram.ui.Cells;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.android.AndroidUtilities;
 import org.telegram.android.ContactsController;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.TLRPC;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
@@ -30,7 +33,9 @@ public class DrawerProfileCell extends FrameLayout {
 
     public DrawerProfileCell(Context context) {
         super(context);
-        setBackgroundColor(0xff4c84b5);
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("extraconfig", Activity.MODE_PRIVATE);
+        int drawerColor = preferences.getInt("drawerColor", 0xff4c84b5);
+        setBackgroundColor(drawerColor);
 
         avatarImageView = new BackupImageView(context);
         avatarImageView.imageReceiver.setRoundRadius(AndroidUtilities.dp(32));
