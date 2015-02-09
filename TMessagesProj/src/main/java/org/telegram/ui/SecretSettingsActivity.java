@@ -55,6 +55,7 @@ import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.ColorPickerView;
 import org.telegram.ui.Components.NumberPicker;
+import org.telegram.ui.LaunchActivity;
 
 public class SecretSettingsActivity extends BaseFragment {
   private ListView listView;
@@ -147,7 +148,7 @@ public class SecretSettingsActivity extends BaseFragment {
               @Override
               public void run() {
                   // http://stackoverflow.com/a/17166729
-                Intent mStartActivity = new Intent(ApplicationLoader.applicationContext, StartActivity.class);
+                Intent mStartActivity = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
                 int mPendingIntentId = 17166729;
                 PendingIntent mPendingIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
                 AlarmManager mgr = (AlarmManager)ApplicationLoader.applicationContext.getSystemService(Context.ALARM_SERVICE);
